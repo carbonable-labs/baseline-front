@@ -145,11 +145,13 @@ const FormPage = () => {
           }
         }
       `}</style>
-      <header className="text-center mb-8">
-        <Link href="/">
-          <span className="text-4xl font-bold hover:underline cursor-pointer">Baseline Calculator</span>
-        </Link>
-        <p className="text-xl text-gray-600">by Carbonable</p>
+      <header className="fixed top-0 left-0 w-full bg-white shadow-md z-10">
+        <div className="text-center p-4">
+          <Link href="/">
+            <span className="text-4xl font-bold hover:underline cursor-pointer">Baseline Calculator</span>
+          </Link>
+          <p className="text-xl text-gray-600">by Carbonable</p>
+        </div>
       </header>
       {!showResult ? (
         <div className="bg-white p-8 rounded w-full max-w-xl sm:max-w-2xl relative overflow-hidden border-transparent h-64">
