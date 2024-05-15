@@ -5,12 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
 import biomassDataRaw from './biomassData.json';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Button } from '@/components/ui/button';
-import { CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
 
-// Define the interface for biomass data
+// Définir l'interface pour les données de biomasse
 interface BiomassData {
   [key: string]: number | null;
 }
@@ -28,29 +24,18 @@ const questions = [
   { id: 8, question: 'Is there transparent and verifiable information to justify a different shrub biomass ratio (BDRSF)? If yes, provide the value. Otherwise, leave it as 0.10.', type: 'number', default: 0.10 }
 ];
 
-const initializeAnswers = () => {
-  const initialAnswers = questions.map(q => (q.default !== undefined ? q.default.toString() : ''));
-  const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
-  if (savedAnswers.length === questions.length) {
-    return savedAnswers;
-  }
-  return initialAnswers;
-};
-
 const FormPage = () => {
   const searchParams = useSearchParams();
   const role = searchParams.get('role');
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<string[]>(initializeAnswers());
+  const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(''));
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [result, setResult] = useState<number >(0);
   const [fadeIn, setFadeIn] = useState(false);
   const [bFOREST, setBFOREST] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [open, setOpen] = useState(false);
 
   // Load saved answers from localStorage on component mount
   useEffect(() => {
@@ -109,9 +94,9 @@ const FormPage = () => {
     }
   };
 
-  const handleChange = (value: string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
     const newAnswers = [...answers];
-    newAnswers[currentQuestion] = value;
+    newAnswers[currentQuestion] = e.target.value;
     setAnswers(newAnswers);
     localStorage.setItem('formAnswers', JSON.stringify(newAnswers));
   };
@@ -134,16 +119,16 @@ const FormPage = () => {
   };
 
   const handleCalculate = () => {
-    if (validateAnswer(answers[currentQuestion]) !== null) {
+    if (!bFOREST) {
+      setError('Please select a region');
+      return;
+    }
+    if (validateAnswer(answers[currentQuestion])) {
       const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
       const bFOREST = biomassData[region];
       const CFTREE = 0.47;
       const CFS = 0.47;
 
-      if (!bFOREST) {
-        setError('Please select a region');
-        return;
-      }
       // Calculating CTREE_BASELINE
       const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
 
@@ -190,11 +175,6 @@ const FormPage = () => {
 
   const isLastQuestion = currentQuestion === questions.length - 1;
 
-  // Filtering options based on search term
-  const filteredOptions = questions[currentQuestion].options?.filter(option =>
-    option.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center bg-white p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       <header className="fixed top-0 left-0 w-full bg-white shadow-md z-10">
@@ -211,54 +191,23 @@ const FormPage = () => {
             <h2 className="text-xl font-semibold mb-2 text-gray-900">{questions[currentQuestion].question}</h2>
             <p className="text-gray-500 mb-4">Put zero if you don't have it</p>
             {questions[currentQuestion].type === 'select' ? (
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between"
-                  >
-                    {answers[currentQuestion]
-                      ? questions[currentQuestion].options?.find((option) => option === answers[currentQuestion])
-                      : "Select your region..."}
-                    <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search region..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="h-9"
-                    />
-                    <CommandEmpty>No region found.</CommandEmpty>
-                    <CommandGroup>
-                      {filteredOptions?.map((option) => (
-                        <CommandItem
-                          key={option}
-                          value={option}
-                          onSelect={(currentValue) => {
-                            handleChange(currentValue);
-                            setOpen(false);
-                          }}
-                        >
-                          {option}
-                          <CheckIcon
-                            className={`ml-auto h-4 w-4 ${answers[currentQuestion] === option ? 'opacity-100' : 'opacity-0'}`}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <select
+                value={answers[currentQuestion]}
+                onChange={handleChange}
+                className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+              >
+                <option value="">Select your region</option>
+                {questions[currentQuestion].options?.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             ) : (
               <input
                 type={questions[currentQuestion].type}
                 value={answers[currentQuestion]}
-                onChange={(e) => handleChange(e.target.value)}
+                onChange={handleChange}
                 className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
                 placeholder="Type your answer here..."
               />
