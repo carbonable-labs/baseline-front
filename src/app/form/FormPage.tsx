@@ -6,7 +6,7 @@ import Link from 'next/link';
 import confetti from 'canvas-confetti';
 import biomassDataRaw from './biomassData.json';
 
-// Définir l'interface pour les données de biomasse
+// Define the interface for biomass data
 interface BiomassData {
   [key: string]: number | null;
 }
@@ -28,8 +28,19 @@ const FormPage = () => {
   const searchParams = useSearchParams();
   const role = searchParams.get('role');
 
+  const initializeAnswers = () => {
+    if (typeof window !== "undefined") {
+      const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
+      if (savedAnswers.length === questions.length) {
+        return savedAnswers;
+      }
+    }
+    const initialAnswers = questions.map(q => (q.default !== undefined ? q.default.toString() : ''));
+    return initialAnswers;
+  };
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(''));
+  const [answers, setAnswers] = useState<string[]>(initializeAnswers());
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -39,25 +50,29 @@ const FormPage = () => {
 
   // Load saved answers from localStorage on component mount
   useEffect(() => {
-    const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
-    if (savedAnswers.length === questions.length) {
-      setAnswers(savedAnswers);
-    } else {
-      // Set default values for specific questions
-      const newAnswers = [...answers];
-      questions.forEach((question, index) => {
-        if (question.default !== undefined) {
-          newAnswers[index] = question.default.toString();
-        }
-      });
-      setAnswers(newAnswers);
+    if (typeof window !== "undefined") {
+      const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
+      if (savedAnswers.length === questions.length) {
+        setAnswers(savedAnswers);
+      } else {
+        // Set default values for specific questions
+        const newAnswers = [...answers];
+        questions.forEach((question, index) => {
+          if (question.default !== undefined) {
+            newAnswers[index] = question.default.toString();
+          }
+        });
+        setAnswers(newAnswers);
+      }
     }
     // Trigger fade-in effect after component mounts
     setFadeIn(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('formAnswers', JSON.stringify(answers));
+    if (typeof window !== "undefined") {
+      localStorage.setItem('formAnswers', JSON.stringify(answers));
+    }
   }, [answers]);
 
   useEffect(() => {
@@ -98,7 +113,9 @@ const FormPage = () => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = e.target.value;
     setAnswers(newAnswers);
-    localStorage.setItem('formAnswers', JSON.stringify(newAnswers));
+    if (typeof window !== "undefined") {
+      localStorage.setItem('formAnswers', JSON.stringify(newAnswers));
+    }
   };
 
   const validateAnswer = (answer: string) => {
@@ -125,7 +142,15 @@ const FormPage = () => {
       const bFOREST = biomassData[region];
       const CFTREE = 0.47;
       const CFS = 0.47;
-
+      console.log('bFOREST', bFOREST);
+      console.log('region', region);
+      console.log('ha', ha);
+      console.log('treeCrownCover', treeCrownCover);
+      console.log('shrubCrownCover', shrubCrownCover);
+      console.log('shrubArea', shrubArea);
+      console.log('treeRootShoot', treeRootShoot);
+      console.log('shrubRootShoot', shrubRootShoot);
+      console.log('shrubBiomass', shrubBiomass);
       if (!bFOREST) {
         setError('Please select a region');
         return;
@@ -154,7 +179,9 @@ const FormPage = () => {
   const handleRedo = () => {
     setCurrentQuestion(0);
     setShowResult(false);
-    localStorage.removeItem('formAnswers');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem('formAnswers');
+    }
   };
 
   useEffect(() => {
