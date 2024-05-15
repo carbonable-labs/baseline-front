@@ -23,6 +23,7 @@ const FormPage = () => {
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>(initializeAnswers());
+  const [conditionalAnswer, setConditionalAnswer] = useState<string>(''); // For the conditional input
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -65,15 +66,43 @@ const FormPage = () => {
     }
   }, [answers[0]]);
 
+  const getNextQuestionId = () => {
+    const currentQuestionObj = questions[currentQuestion];
+    if (currentQuestionObj.type === 'select' && currentQuestionObj.nextIfYes) {
+      const selectedOption = answers[currentQuestion];
+      if (selectedOption === "Yes") {
+        return currentQuestionObj.nextIfYes;
+      }
+      return currentQuestionObj.nextIfNo;
+    }
+    else {
+      return currentQuestionObj.next;
+    }
+  };
+
+  const getPrevQuestionId = () => {
+    const currentQuestionObj = questions[currentQuestion];
+    if (currentQuestionObj.type === 'select' && currentQuestionObj.nextIfYes) {
+      return currentQuestionObj.prevEstimationNotGiven //todo
+    }
+    else {
+      return currentQuestionObj.prev;
+    }
+  }
+
   const handleNext = () => {
     if (validateAnswer(answers[currentQuestion])) {
       setError('');
       setAnimating(true);
       setTimeout(() => {
         setAnimating(false);
-        if (currentQuestion < questions.length - 1) {
-          setCurrentQuestion(currentQuestion + 1);
+        const nextQuestionId = getNextQuestionId();
+        if (!nextQuestionId) {
+          console.error('Next question not found');
+          return;
         }
+
+        setCurrentQuestion(nextQuestionId);
       }, 300);
     } else {
       setError('Please enter a valid answer');
@@ -100,6 +129,10 @@ const FormPage = () => {
     }
   };
 
+  const handleConditionalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConditionalAnswer(e.target.value);
+  };
+
   const validateAnswer = (answer: string) => {
     if (questions[currentQuestion].type === 'number') {
       const value = Number(answer);
@@ -118,9 +151,7 @@ const FormPage = () => {
   };
 
   const handleCalculate = () => {
-
     if (validateAnswer(answers[currentQuestion])) {
-      // const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
       const region = answers[0];
       const [
         initialHa, initialTreeCrownCover, initialShrubCrownCover, initialShrubArea, initialTreeRootShoot, initialShrubRootShoot, initialShrubBiomass,
@@ -147,8 +178,6 @@ const FormPage = () => {
 
       // Final CO2 estimated value (net gain)
       const finalCO2Estimated = projectCarbonStock - initialCarbonStock;
-
-      setResult(finalCO2Estimated);
 
       setResult(finalCO2Estimated);
       setShowResult(true);
@@ -187,7 +216,7 @@ const FormPage = () => {
     };
   }, [currentQuestion, answers]);
 
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  let isLastQuestion = questions[currentQuestion].id === questions[questions.length - 1].id;
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center bg-white p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
@@ -203,20 +232,30 @@ const FormPage = () => {
         <div className="bg-white p-8 rounded w-full max-w-xl sm:max-w-2xl relative overflow-hidden border-transparent h-64 grid grid-cols-5">
           <div className={`absolute inset-0 ${animating ? 'slide-down' : 'slide-active'}`}>
             <h2 className="text-xl font-semibold mb-2 text-gray-900">{questions[currentQuestion].question}</h2>
-            <p className="text-gray-500 mb-4">Put zero if you don't have it</p>
             {questions[currentQuestion].type === 'select' ? (
-              <select
-                value={answers[currentQuestion]}
-                onChange={handleChange}
-                className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
-              >
-                <option value="">Select your region</option>
-                {questions[currentQuestion].options?.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <select
+                  value={answers[currentQuestion]}
+                  onChange={handleChange}
+                  className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+                >
+                  <option value="">{questions[currentQuestion].default}</option>
+                  {questions[currentQuestion].options?.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {currentQuestion === 2 && answers[currentQuestion] === "Yes" && (
+                  <input
+                    type="number"
+                    value={conditionalAnswer}
+                    onChange={handleConditionalChange}
+                    className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+                    placeholder="Enter your estimation"
+                  />
+                )}
+              </div>
             ) : (
               <input
                 type={questions[currentQuestion].type}
@@ -272,5 +311,6 @@ const FormPage = () => {
     </div>
   );
 };
+
 
 export default FormPage;
