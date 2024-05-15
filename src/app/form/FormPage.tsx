@@ -26,7 +26,7 @@ const FormPage = () => {
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [result, setResult] = useState<number >(0);
+  const [result, setResult] = useState<number>(0);
   const [fadeIn, setFadeIn] = useState(false);
   const [bFOREST, setBFOREST] = useState<number | null>(null);
 
@@ -118,24 +118,37 @@ const FormPage = () => {
   };
 
   const handleCalculate = () => {
-    
+
     if (validateAnswer(answers[currentQuestion])) {
-      const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
+      // const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
+      const region = answers[0];
+      const [
+        initialHa, initialTreeCrownCover, initialShrubCrownCover, initialShrubArea, initialTreeRootShoot, initialShrubRootShoot, initialShrubBiomass,
+        projectHa, projectTreeCrownCover, projectShrubCrownCover, projectShrubArea, projectTreeRootShoot, projectShrubRootShoot, projectShrubBiomass
+      ] = answers.slice(1).map(Number); // Convert remaining answers to numbers
       const bFOREST = biomassData[region];
       const CFTREE = 0.47;
       const CFS = 0.47;
+
       if (!bFOREST) {
         setError('Please select a region');
         return;
       }
-      // Calculating CTREE_BASELINE
-      const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
 
-      // Calculating CSHRUB_t
-      const CSHRUB_t = (44 / 12) * CFS * (1 + shrubRootShoot) * shrubArea * shrubBiomass * bFOREST * shrubCrownCover;
+      // Calculating baseline carbon stock
+      const initialCTREE = (44 / 12) * CFTREE * bFOREST * (1 + initialTreeRootShoot) * initialTreeCrownCover * initialHa;
+      const initialCSHRUB = (44 / 12) * CFS * (1 + initialShrubRootShoot) * initialShrubArea * initialShrubBiomass * bFOREST * initialShrubCrownCover;
+      const initialCarbonStock = initialCTREE + initialCSHRUB;
 
-      // Final CO2 estimated value
-      const finalCO2Estimated = CTREE_BASELINE + CSHRUB_t;
+      // Calculating project carbon stock
+      const projectCTREE = (44 / 12) * CFTREE * bFOREST * (1 + projectTreeRootShoot) * projectTreeCrownCover * projectHa;
+      const projectCSHRUB = (44 / 12) * CFS * (1 + projectShrubRootShoot) * projectShrubArea * projectShrubBiomass * bFOREST * projectShrubCrownCover;
+      const projectCarbonStock = projectCTREE + projectCSHRUB;
+
+      // Final CO2 estimated value (net gain)
+      const finalCO2Estimated = projectCarbonStock - initialCarbonStock;
+
+      setResult(finalCO2Estimated);
 
       setResult(finalCO2Estimated);
       setShowResult(true);
