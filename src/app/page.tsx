@@ -10,7 +10,7 @@ export default function Home() {
         </Link>
         <p className="text-xl text-gray-600">by Carbonable</p>
       </header>
-      <main className="flex flex-col lg:flex-row w-full max-w-7xl">
+      <main className="grid lg:grid-cols-2 grid-flow-row w-full max-w-7xl">
         <Link href="/form?role=project-funder" className="relative flex-1 h-80 lg:h-[80vh] overflow-hidden group">
           <div className="relative w-full h-full">
             <Image
@@ -18,7 +18,7 @@ export default function Home() {
               alt="Project Funder"
               layout="fill"
               objectFit="cover"
-              className="transition-transform duration-500 ease-in-out transform group-hover:scale-110"
+              className="transition-transform duration-500 ease-in-out  transform group-hover:scale-110"
             />
           </div>
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">

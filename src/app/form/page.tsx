@@ -20,16 +20,17 @@ const FormPage = () => {
   const [error, setError] = useState('');
   const [animating, setAnimating] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [result, setResult] = useState<number | null>(null);
+  const [result, setResult] = useState<number >(0);
+  const [fadeIn, setFadeIn] = useState(false);
 
   // Load saved answers from localStorage on component mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
       const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
       if (savedAnswers.length === questions.length) {
         setAnswers(savedAnswers);
       }
-    }
+    // Trigger fade-in effect after component mounts
+    setFadeIn(true);
   }, []);
 
 
@@ -63,12 +64,14 @@ const FormPage = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = e.target.value;
+    localStorage.setItem('formAnswers', JSON.stringify(answers));
     setAnswers(newAnswers);
-    localStorage.setItem('formAnswers', JSON.stringify(newAnswers));
+    
   };
 
   const validateAnswer = (answer: string) => {
     const value = Number(answer);
+    localStorage.setItem('formAnswers', JSON.stringify(answers));
     if (isNaN(value)) return false;
 
     if (currentQuestion === 2 && (value < 0 || value > 1)) {
@@ -85,8 +88,8 @@ const FormPage = () => {
   const handleCalculate = () => {
     if (validateAnswer(answers[currentQuestion])) {
       const [AGB, HA, CROWN] = answers.map(Number);
-      const result = 0.47 * 44 / 12 * AGB * 1.25 * HA * CROWN;
-      setResult(result);
+      const resultconst = 0.47 * 44 / 12 * AGB * 1.25 * HA * CROWN;
+      setResult(resultconst);
       setShowResult(true);
       confetti({
         particleCount: 100,
@@ -102,10 +105,8 @@ const FormPage = () => {
     // setAnswers(Array(questions.length).fill(''));
     setCurrentQuestion(0);
     setShowResult(false);
-    setResult(null);
-    // if (typeof window !== "undefined") {
-    //   localStorage.removeItem('formAnswers');
-    // }
+ 
+
   };
 
   useEffect(() => {
@@ -128,23 +129,7 @@ const FormPage = () => {
   const isLastQuestion = currentQuestion === questions.length - 1;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
-      <style jsx>{`
-        @layer utilities {
-          .slide-up {
-            transform: translateY(-100%);
-            transition: transform 0.3s ease-in-out;
-          }
-          .slide-down {
-            transform: translateY(100%);
-            transition: transform 0.3s ease-in-out;
-          }
-          .slide-active {
-            transform: translateY(0);
-            transition: transform 0.3s ease-in-out;
-          }
-        }
-      `}</style>
+    <div className={`min-h-screen flex flex-col items-center justify-center bg-white p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       <header className="fixed top-0 left-0 w-full bg-white shadow-md z-10">
         <div className="text-center p-4">
           <Link href="/">
@@ -154,7 +139,7 @@ const FormPage = () => {
         </div>
       </header>
       {!showResult ? (
-        <div className="bg-white p-8 rounded w-full max-w-xl sm:max-w-2xl relative overflow-hidden border-transparent h-64">
+        <div className="bg-white p-8 rounded w-full max-w-xl sm:max-w-2xl relative overflow-hidden border-transparent h-64 grid grid-cols-5">
           <div className={`absolute inset-0 ${animating ? 'slide-down' : 'slide-active'}`}>
             <h2 className="text-xl font-semibold mb-2 text-gray-900">{questions[currentQuestion].question}</h2>
             <p className="text-gray-500 mb-4">Put zero if you don't have it</p>
