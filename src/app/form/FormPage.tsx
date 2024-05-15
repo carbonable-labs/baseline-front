@@ -4,35 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
-import biomassDataRaw from './biomassData.json';
-
-// Define the interface for biomass data
-interface BiomassData {
-  [key: string]: number | null;
-}
-
-const biomassData = biomassDataRaw as BiomassData;
-
-const questions = [
-  // Questions for baseline data
-  { id: 1, question: 'In which country is your project located?', type: 'select', options: Object.keys(biomassData) },
-  { id: 2, question: 'Baseline - Number of hectares (ha) of the project area', type: 'number' },
-  { id: 3, question: 'Baseline - Provide the tree crown cover at the baseline (e.g., 0.50 for 50%)', type: 'number' },
-  { id: 4, question: 'Baseline - Provide the shrub crown cover (e.g., 0.10 for 10%)', type: 'number' },
-  { id: 5, question: 'Baseline - Provide the area (ha) occupied by shrub biomass', type: 'number' },
-  { id: 6, question: 'Baseline - Is there transparent and verifiable information to justify a different root-shoot ratio for trees? If yes, provide the value. Otherwise, leave it as 0.25.', type: 'number', default: 0.25 },
-  { id: 7, question: 'Baseline - Is there transparent and verifiable information to justify a different root-shoot ratio for shrubs? If yes, provide the value. Otherwise, leave it as 0.40.', type: 'number', default: 0.40 },
-  { id: 8, question: 'Baseline - Is there transparent and verifiable information to justify a different shrub biomass ratio (BDRSF)? If yes, provide the value. Otherwise, leave it as 0.10.', type: 'number', default: 0.10 },
-  
-  // Questions for project data
-  { id: 9, question: 'Project - Number of hectares (ha) of the project area', type: 'number' },
-  { id: 10, question: 'Project - Provide the tree crown cover at the baseline (e.g., 0.50 for 50%)', type: 'number' },
-  { id: 11, question: 'Project - Provide the shrub crown cover (e.g., 0.10 for 10%)', type: 'number' },
-  { id: 12, question: 'Project - Provide the area (ha) occupied by shrub biomass', type: 'number' },
-  { id: 13, question: 'Project - Is there transparent and verifiable information to justify a different root-shoot ratio for trees? If yes, provide the value. Otherwise, leave it as 0.25.', type: 'number', default: 0.25 },
-  { id: 14, question: 'Project - Is there transparent and verifiable information to justify a different root-shoot ratio for shrubs? If yes, provide the value. Otherwise, leave it as 0.40.', type: 'number', default: 0.40 },
-  { id: 15, question: 'Project - Is there transparent and verifiable information to justify a different shrub biomass ratio (BDRSF)? If yes, provide the value. Otherwise, leave it as 0.10.', type: 'number', default: 0.10 }
-];
+import { BiomassData, biomassData, questions } from '../utils';
 
 const FormPage = () => {
   const searchParams = useSearchParams();
@@ -152,15 +124,6 @@ const FormPage = () => {
       const bFOREST = biomassData[region];
       const CFTREE = 0.47;
       const CFS = 0.47;
-      console.log('bFOREST', bFOREST);
-      console.log('region', region);
-      console.log('ha', ha);
-      console.log('treeCrownCover', treeCrownCover);
-      console.log('shrubCrownCover', shrubCrownCover);
-      console.log('shrubArea', shrubArea);
-      console.log('treeRootShoot', treeRootShoot);
-      console.log('shrubRootShoot', shrubRootShoot);
-      console.log('shrubBiomass', shrubBiomass);
       if (!bFOREST) {
         setError('Please select a region');
         return;
