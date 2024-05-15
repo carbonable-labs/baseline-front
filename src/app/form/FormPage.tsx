@@ -6,9 +6,14 @@ import Link from 'next/link';
 import confetti from 'canvas-confetti';
 
 const questions = [
-  { id: 1, question: 'What is the Above-Ground Biomass (AGB) from the dMRV per ha?', type: 'number' },
-  { id: 2, question: 'Number of ha of the project', type: 'number' },
-  { id: 3, question: 'Provide your crown cover if you have it', type: 'number' },
+  { id: 1, question: 'What is your geographical region?', type: 'select', options: ['Brazil', 'Indonesia', 'Malaysia', 'Mexico', 'Thailand', 'Nigeria', 'Colombia', 'Peru', 'Venezuela', 'Ecuador'] },
+  { id: 2, question: 'Number of hectares (ha) of the project area', type: 'number' },
+  { id: 3, question: 'Provide the tree crown cover at the baseline (e.g., 0.50 for 50%)', type: 'number' },
+  { id: 4, question: 'Provide the shrub crown cover (e.g., 0.10 for 10%)', type: 'number' },
+  { id: 5, question: 'Provide the area (ha) occupied by shrub biomass', type: 'number' },
+  { id: 6, question: 'Is there transparent and verifiable information to justify a different root-shoot ratio for trees? If yes, provide the value. Otherwise, leave it as 0.25.', type: 'number', default: 0.25 },
+  { id: 7, question: 'Is there transparent and verifiable information to justify a different root-shoot ratio for shrubs? If yes, provide the value. Otherwise, leave it as 0.40.', type: 'number', default: 0.40 },
+  { id: 8, question: 'Is there transparent and verifiable information to justify a different shrub biomass ratio (BDRSF)? If yes, provide the value. Otherwise, leave it as 0.10.', type: 'number', default: 0.10 }
 ];
 
 const FormPage = () => {
@@ -25,15 +30,26 @@ const FormPage = () => {
 
   // Load saved answers from localStorage on component mount
   useEffect(() => {
-      const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
-      if (savedAnswers.length === questions.length) {
-        setAnswers(savedAnswers);
-      }
+    const savedAnswers = JSON.parse(localStorage.getItem('formAnswers') || '[]');
+    if (savedAnswers.length === questions.length) {
+      setAnswers(savedAnswers);
+    } else {
+      // Set default values for specific questions
+      const newAnswers = [...answers];
+      questions.forEach((question, index) => {
+        if (question.default !== undefined) {
+          newAnswers[index] = question.default.toString();
+        }
+      });
+      setAnswers(newAnswers);
+    }
     // Trigger fade-in effect after component mounts
     setFadeIn(true);
   }, []);
 
-
+  useEffect(() => {
+    localStorage.setItem('formAnswers', JSON.stringify(answers));
+  }, [answers]);
 
   const handleNext = () => {
     if (validateAnswer(answers[currentQuestion])) {
@@ -46,7 +62,7 @@ const FormPage = () => {
         }
       }, 300);
     } else {
-      setError('Please enter a valid number');
+      setError('Please enter a valid answer');
     }
   };
 
@@ -61,21 +77,22 @@ const FormPage = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = e.target.value;
-    localStorage.setItem('formAnswers', JSON.stringify(newAnswers));
     setAnswers(newAnswers);
+    localStorage.setItem('formAnswers', JSON.stringify(newAnswers));
   };
 
   const validateAnswer = (answer: string) => {
-    const value = Number(answer);
-    localStorage.setItem('formAnswers', JSON.stringify(answers));
-    if (isNaN(value)) return false;
+    if (questions[currentQuestion].type === 'number') {
+      const value = Number(answer);
+      if (isNaN(value)) return false;
 
-    if (currentQuestion === 2 && (value < 0 || value > 1)) {
-      setError('Crown cover must be between 0 and 1');
-      return false;
+      if (currentQuestion === 3 && (value < 0 || value > 1)) {
+        setError('Crown cover must be between 0 and 1');
+        return false;
+      }
     }
     return true;
   };
@@ -86,9 +103,21 @@ const FormPage = () => {
 
   const handleCalculate = () => {
     if (validateAnswer(answers[currentQuestion])) {
-      const [AGB, HA, CROWN] = answers.map(Number);
-      const resultconst = 0.47 * 44 / 12 * AGB * 1.25 * HA * CROWN;
+      const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
+      const resultconst = 0.47 * 44 / 12 * treeCrownCover * 1.25 * ha * shrubCrownCover * shrubArea * treeRootShoot * shrubRootShoot * shrubBiomass;
       setResult(resultconst);
+
+      const CFTREE = 0.47;
+        const CFS = 0.47;
+
+        // Calculating CTREE_BASELINE
+        const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
+
+        // Calculating CSHRUB,t
+        const CSHRUB_t = (44 / 12) * CFS * (1 + shrubRootShoot) * shrubArea * shrubBiomass * bFOREST * shrubCrownCover;
+
+        // Final CO2 estimated value
+        const finalCO2Estimated = CTREE_BASELINE + CSHRUB_t;
       setShowResult(true);
       confetti({
         particleCount: 100,
@@ -140,13 +169,28 @@ const FormPage = () => {
           <div className={`absolute inset-0 ${animating ? 'slide-down' : 'slide-active'}`}>
             <h2 className="text-xl font-semibold mb-2 text-gray-900">{questions[currentQuestion].question}</h2>
             <p className="text-gray-500 mb-4">Put zero if you don't have it</p>
-            <input
-              type="text"
-              value={answers[currentQuestion]}
-              onChange={handleChange}
-              className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
-              placeholder="Type your answer here..."
-            />
+            {questions[currentQuestion].type === 'select' ? (
+              <select
+                value={answers[currentQuestion]}
+                onChange={handleChange}
+                className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+              >
+                <option value="">Select your region</option>
+                {questions[currentQuestion].options?.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={questions[currentQuestion].type}
+                value={answers[currentQuestion]}
+                onChange={handleChange}
+                className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+                placeholder="Type your answer here..."
+              />
+            )}
             {error && <p className="text-red-500 mb-4">{error}</p>}
             <div className="flex justify-between items-center">
               <button
