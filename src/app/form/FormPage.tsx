@@ -4,9 +4,17 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
+import biomassDataRaw from './biomassData.json';
+
+// Définir l'interface pour les données de biomasse
+interface BiomassData {
+  [key: string]: number | null;
+}
+
+const biomassData = biomassDataRaw as BiomassData;
 
 const questions = [
-  { id: 1, question: 'What is your geographical region?', type: 'select', options: ['Brazil', 'Indonesia', 'Malaysia', 'Mexico', 'Thailand', 'Nigeria', 'Colombia', 'Peru', 'Venezuela', 'Ecuador'] },
+  { id: 1, question: 'In which country is your project located?', type: 'select', options: Object.keys(biomassData) },
   { id: 2, question: 'Number of hectares (ha) of the project area', type: 'number' },
   { id: 3, question: 'Provide the tree crown cover at the baseline (e.g., 0.50 for 50%)', type: 'number' },
   { id: 4, question: 'Provide the shrub crown cover (e.g., 0.10 for 10%)', type: 'number' },
@@ -27,6 +35,7 @@ const FormPage = () => {
   const [showResult, setShowResult] = useState(false);
   const [result, setResult] = useState<number >(0);
   const [fadeIn, setFadeIn] = useState(false);
+  const [bFOREST, setBFOREST] = useState<number | null>(null);
 
   // Load saved answers from localStorage on component mount
   useEffect(() => {
@@ -50,6 +59,14 @@ const FormPage = () => {
   useEffect(() => {
     localStorage.setItem('formAnswers', JSON.stringify(answers));
   }, [answers]);
+
+  useEffect(() => {
+    if (answers[0]) {
+      const region = answers[0];
+      const biomassValue = biomassData[region as keyof BiomassData];
+      setBFOREST(biomassValue);
+    }
+  }, [answers[0]]);
 
   const handleNext = () => {
     if (validateAnswer(answers[currentQuestion])) {
@@ -102,22 +119,22 @@ const FormPage = () => {
   };
 
   const handleCalculate = () => {
-    if (validateAnswer(answers[currentQuestion])) {
+    if (validateAnswer(answers[currentQuestion]) && bFOREST !== null) {
       const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
-      const resultconst = 0.47 * 44 / 12 * treeCrownCover * 1.25 * ha * shrubCrownCover * shrubArea * treeRootShoot * shrubRootShoot * shrubBiomass;
-      setResult(resultconst);
 
       const CFTREE = 0.47;
-        const CFS = 0.47;
+      const CFS = 0.47;
 
-        // Calculating CTREE_BASELINE
-        const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
+      // Calculating CTREE_BASELINE
+      const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
 
-        // Calculating CSHRUB,t
-        const CSHRUB_t = (44 / 12) * CFS * (1 + shrubRootShoot) * shrubArea * shrubBiomass * bFOREST * shrubCrownCover;
+      // Calculating CSHRUB_t
+      const CSHRUB_t = (44 / 12) * CFS * (1 + shrubRootShoot) * shrubArea * shrubBiomass * bFOREST * shrubCrownCover;
 
-        // Final CO2 estimated value
-        const finalCO2Estimated = CTREE_BASELINE + CSHRUB_t;
+      // Final CO2 estimated value
+      const finalCO2Estimated = CTREE_BASELINE + CSHRUB_t;
+
+      setResult(finalCO2Estimated);
       setShowResult(true);
       confetti({
         particleCount: 100,
