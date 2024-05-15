@@ -119,16 +119,17 @@ const FormPage = () => {
   };
 
   const handleCalculate = () => {
-    if (!bFOREST) {
-      setError('Please select a region');
-      return;
-    }
+    
     if (validateAnswer(answers[currentQuestion])) {
       const [region, ha, treeCrownCover, shrubCrownCover, shrubArea, treeRootShoot, shrubRootShoot, shrubBiomass] = answers.map(Number);
       const bFOREST = biomassData[region];
       const CFTREE = 0.47;
       const CFS = 0.47;
 
+      if (!bFOREST) {
+        setError('Please select a region');
+        return;
+      }
       // Calculating CTREE_BASELINE
       const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
 
