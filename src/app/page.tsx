@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center p-4" style={{ backgroundImage: 'url(/background.jpg)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center p-4" >
       <header className="text-center mb-8 bg-white bg-opacity-80 w-full max-w-4xl mx-auto py-4 shadow-md rounded-lg">
         <Link href="/">
           <span className="text-4xl font-bold text-green-900 hover:underline cursor-pointer">Baseline Calculator</span>

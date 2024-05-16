@@ -218,7 +218,7 @@ const FormPage = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center bg-cover bg-center p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: 'url(/background.jpg)' }}>
+    <div className={`min-h-screen flex flex-col items-center justify-center bg-cover bg-center p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`} >
       <header className="fixed top-0 left-0 w-full bg-green-900 bg-opacity-70 shadow-md z-10">
         <div className="text-center p-4">
           <Link href="/">
