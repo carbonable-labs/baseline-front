@@ -27,9 +27,9 @@ const questions = [
   { id: 8, question: 'Provide the tree crown cover at the baseline (e.g., 0.50 for 50%)', type: 'number' },
   { id: 9, question: 'Provide the shrub crown cover (e.g., 0.10 for 10%)', type: 'number' },
   { id: 10, question: 'Provide the area (ha) occupied by shrub biomass', type: 'number' },
-  { id: 11, question: 'Is there transparent and verifiable information to justify a different root-shoot ratio for trees? If yes, provide the value. Otherwise, leave it as 0.25.', type: 'number', default: 0.25 },
-  { id: 12, question: 'Is there transparent and verifiable information to justify a different root-shoot ratio for shrubs? If yes, provide the value. Otherwise, leave it as 0.40.', type: 'number', default: 0.40 },
-  { id: 13, question: 'Is there transparent and verifiable information to justify a different shrub biomass ratio (BDRSF)? If yes, provide the value. Otherwise, leave it as 0.10.', type: 'number', default: 0.10 }
+  { id: 11, question: 'Different tree root-shoot ratio? Provide or default to 0.25.', type: 'number', default: 0.25 },
+  { id: 12, question: 'Different shrub root-shoot ratio? Provide or default to 0.40.', type: 'number', default: 0.40 },
+  { id: 13, question: 'Different shrub biomass ratio (BDRSF)? Provide or default to 0.10.', type: 'number', default: 0.10 }
 ];
 
 const FormPage = () => {
@@ -139,11 +139,8 @@ const FormPage = () => {
         __, projectTreeCrownCover, projectShrubCrownCover, projectShrubArea,
         treeRootShoot, shrubRootShoot, shrubBiomass
       ] = answers.map(Number);
-      console.log("answers", answers);
       const selectedRegion = answers[0]; // Get the region from the answers array
-      console.log("selectedRegion", selectedRegion);
       const bFOREST = biomassData[selectedRegion as keyof BiomassData]; // Fetch the biomass data for the region
-      console.log("bFOREST", bFOREST);
       const CFTREE = 0.47;
       const CFS = 0.47;
 
@@ -151,17 +148,6 @@ const FormPage = () => {
         setError('Please select a region');
         return;
       }
-
-      console.log("ha", ha);
-      console.log("treeCrownCover", treeCrownCover);
-      console.log("shrubCrownCover", shrubCrownCover);
-      console.log("shrubArea", shrubArea);
-      console.log("projectTreeCrownCover", projectTreeCrownCover);
-      console.log("projectShrubCrownCover", projectShrubCrownCover);
-      console.log("projectShrubArea", projectShrubArea);
-      console.log("treeRootShoot", treeRootShoot);
-      console.log("shrubRootShoot", shrubRootShoot);
-      console.log("shrubBiomass", shrubBiomass);
 
       // Calculating CTREE_BASELINE
       const CTREE_BASELINE = (44 / 12) * CFTREE * bFOREST * (1 + treeRootShoot) * treeCrownCover * ha;
@@ -172,10 +158,6 @@ const FormPage = () => {
       // Calculating CSHRUB_PROJECT
       const CSHRUB_PROJECT = (44 / 12) * CFS * (1 + shrubRootShoot) * projectShrubArea * shrubBiomass * bFOREST * projectShrubCrownCover;
 
-      console.log("CTREE_BASELINE", CTREE_BASELINE);
-      console.log("CSHRUB_t", CSHRUB_t);
-      console.log("CTREE_PROJECT", CTREE_PROJECT);
-      console.log("CSHRUB_PROJECT", CSHRUB_PROJECT);
       // Final CO2 estimated value
       const finalCO2Estimated = CTREE_PROJECT + CSHRUB_PROJECT - CTREE_BASELINE - CSHRUB_t;
 
@@ -272,12 +254,6 @@ const FormPage = () => {
             ) : questions[currentQuestion].type === 'information' ? (
               <div>
                 <p className="text-gray-800 mb-4">{questions[currentQuestion].info}</p>
-                <button
-                  onClick={handleNext}
-                  className="text-blue-500 flex items-center"
-                >
-                  <span className="mr-2">Next</span> &darr;
-                </button>
               </div>
             ) : (
               <input
