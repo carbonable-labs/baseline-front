@@ -200,49 +200,44 @@ const FormPage = () => {
 
   const complementaryInfo = (questionId: number) => {
     switch (questionId) {
-      case 0:
-        return <p></p>;
       case 1:
         return <p>This will help us determine the appropriate biomass data for your region.</p>;
-      case 2:
-        return <p></p>
       case 3:
         return (
           <div>
-            <p><p>Tree crown cover refers to the area of ground shaded by the canopy of trees when viewed from above.</p></p>
+            <p>Tree crown cover refers to the area of ground shaded by the canopy of trees when viewed from above.</p>
             {/* <img src="/crown-cover-tree.jpg" alt="Tree Cover" /> */}
           </div>
         );
       case 4:
-        return <p><p>Shrub crown cover refers to the area of ground shaded by the canopy of shrubs when viewed from above.</p></p>
+        return <p>Shrub crown cover refers to the area of ground shaded by the canopy of shrubs when viewed from above.</p>
 
       default:
-        return <p></p>
+        return
     }
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center bg-white p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
-      <header className="fixed top-0 left-0 w-full bg-white shadow-md z-10">
+    <div className={`min-h-screen flex flex-col items-center justify-center bg-cover bg-center p-4 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: 'url(/background.jpg)' }}>
+      <header className="fixed top-0 left-0 w-full bg-green-900 bg-opacity-70 shadow-md z-10">
         <div className="text-center p-4">
           <Link href="/">
-            <span className="text-4xl font-bold hover:underline cursor-pointer">Baseline Calculator</span>
+            <span className="text-4xl font-bold text-white hover:underline cursor-pointer">Baseline Calculator</span>
           </Link>
-          <p className="text-xl text-gray-600">by Carbonable</p>
+          <p className="text-xl text-gray-200">by Carbonable</p>
         </div>
       </header>
 
-
       {!showResult ? (
-        <div className={`grid ${complementaryInfo(currentQuestion) ? 'grid-cols-5' : 'grid-cols-5'} bg-white p-12 rounded w-screen relative overflow-hidden border-transparent h-64`}>
+        <div className={`grid ${complementaryInfo(currentQuestion) ? 'grid-cols-5' : 'grid-cols-5'} bg-white p-12 rounded-lg w-full max-w-4xl relative overflow-hidden border-transparent shadow-lg bg-opacity-80`}>
           <div className={`inset-0 ${complementaryInfo(currentQuestion) ? 'col-span-3' : 'col-span-5'} ${animating ? 'slide-down' : 'slide-active'}`}>
-            <h2 className="text-xl font-semibold mb-2 text-gray-900">{questions[currentQuestion].question}</h2>
+            <h2 className="text-2xl font-semibold mb-2 text-gray-900">{questions[currentQuestion].question}</h2>
             {/* <p className="text-gray-500 mb-4">Put zero if you don't have it</p> */}
             {questions[currentQuestion].type === 'select' ? (
               <select
                 value={answers[currentQuestion]}
                 onChange={handleChange}
-                className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+                className="border-2 border-gray-300 p-2 mb-4 w-full rounded-lg focus:outline-none focus:border-blue-500 text-gray-800"
               >
                 <option value="">Select your region</option>
                 {questions[currentQuestion].options?.map((option) => (
@@ -260,7 +255,7 @@ const FormPage = () => {
                 type={questions[currentQuestion].type}
                 value={answers[currentQuestion]}
                 onChange={handleChange}
-                className="border-b-2 border-gray-300 p-2 mb-4 w-full focus:outline-none focus:border-blue-500 text-gray-800"
+                className="border-2 border-gray-300 p-2 mb-4 w-full rounded-lg focus:outline-none focus:border-blue-500 text-gray-800"
                 placeholder="Type your answer here..."
               />
             )}
@@ -269,7 +264,7 @@ const FormPage = () => {
               <button
                 onClick={handlePrevious}
                 disabled={currentQuestion === 0}
-                className="text-blue-500 disabled:text-gray-300 flex items-center"
+                className="text-green-700 disabled:text-gray-300 flex items-center"
               >
                 &uarr; <span className="ml-2">Previous</span>
               </button>
@@ -277,14 +272,14 @@ const FormPage = () => {
               {isLastQuestion ? (
                 <button
                   onClick={handleCalculate}
-                  className="text-2xl font-bold text-blue-500"
+                  className="text-2xl font-bold text-green-700"
                 >
                   OK
                 </button>
               ) : (
                 <button
                   onClick={handleNext}
-                  className="text-blue-500 flex items-center"
+                  className="text-green-700 flex items-center"
                 >
                   <span className="mr-2">Next</span> &darr;
                 </button>
@@ -299,7 +294,7 @@ const FormPage = () => {
 
       ) : (
         <div className="text-center">
-          <div className="bg-white p-8 rounded w-full max-w-xl sm:max-w-2xl relative overflow-hidden border-transparent h-auto flex flex-col items-center justify-center">
+          <div className="bg-white p-8 rounded-lg w-full max-w-xl sm:max-w-2xl relative overflow-hidden border-transparent shadow-lg bg-opacity-80">
             <h2 className="text-4xl font-bold text-green-500 animate-bounce mb-4">
               Result: {formatNumber(result)} tons of CO2
             </h2>
@@ -310,7 +305,7 @@ const FormPage = () => {
               <h3 className="text-xl text-gray-600 mt-4">
                 Here is your proof of computation:
                 <a href="https://sepolia.voyager.online/tx/0x3e774a9ce6afb55fc47c9390776a681f6674162b15cfb9bd6d062df01c823ee"
-                  className="text-blue-500 hover:text-blue-700 ml-2">
+                  className="text-green-700 hover:text-green-900 ml-2">
                   View Transaction
                 </a>
               </h3>
@@ -319,7 +314,7 @@ const FormPage = () => {
 
           <button
             onClick={handleRedo}
-            className="mt-8 bg-blue-500 text-white px-4 py-2 rounded"
+            className="mt-8 bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-900 transition duration-200"
           >
             Redo Form
           </button>
