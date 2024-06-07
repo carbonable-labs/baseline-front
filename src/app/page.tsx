@@ -4,9 +4,9 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center p-4" >
-      <header className="text-center mb-8 bg-white bg-opacity-80 w-full max-w-4xl mx-auto py-4 shadow-md rounded-lg">
+      <header className="text-center mb-8 bg-neutral-700 bg-opacity-80 w-full max-w-4xl mx-auto py-4 shadow-md rounded-lg border border-opacityLight-5">
         <Link href="/">
-          <span className="text-4xl font-bold text-green-900 hover:underline cursor-pointer">Baseline Calculator</span>
+          <span className="text-4xl font-bold hover:underline cursor-pointer">Baseline Calculator</span>
         </Link>
         <p className="text-xl text-gray-600">by Carbonable</p>
       </header>
@@ -24,7 +24,7 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 flex items-center justify-center rounded-lg">
             <div className="bg-black bg-opacity-50 p-4 rounded-lg">
-              <span className="text-white text-3xl font-bold">Project Funder</span>
+              <span className="text-white text-3xl font-bold uppercase">Project Funder</span>
             </div>
           </div>
         </Link>
@@ -41,7 +41,7 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 flex items-center justify-center rounded-lg">
             <div className="bg-black bg-opacity-50 p-4 rounded-lg">
-              <span className="text-white text-3xl font-bold">Project Holder</span>
+              <span className="text-white text-3xl font-bold uppercase">Project Holder</span>
             </div>
           </div>
         </Link>
